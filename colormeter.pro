@@ -18,3 +18,4 @@ RESOURCES += colormeter.qrc
 
 TARGET = colormeter
 
+
