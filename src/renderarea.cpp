@@ -34,17 +34,18 @@ void RenderArea::setImage( QImage const &image )
   update();
 }
 
-void RenderArea::paintEvent( QPaintEvent * /* event */ )
+void RenderArea::paintEvent( QPaintEvent *event )
 {
   QPainter painter(this);
   painter.setRenderHint(QPainter::Antialiasing, false);
   
   painter.scale(scaleFactor, scaleFactor);
-  painter.drawImage(0, 0, image);
-
-  //painter.setPen(palette().dark().color());
-  //painter.setBrush(Qt::NoBrush);
-  //painter.drawRect(QRect(0, 0, width() - 1, height() - 1));
+  
+  QRect exposedRect = painter.matrix().inverted()
+      .mapRect(event->rect())
+      .adjusted(-1, -1, 1, 1);
+  // the adjust is to account for half pixels along edges
+  painter.drawImage(exposedRect, image, exposedRect);
 } 
 
 void RenderArea::setScale( double scaleFactor )
