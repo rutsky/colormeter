@@ -11,6 +11,9 @@ class QScrollArea;
 class QScrollBar;
 class QWidget;
 class QHBoxLayout;
+class QGraphicsView;
+class QGraphicsScene;
+class QGraphicsPixmapItem;
 
 class RenderArea;
  
@@ -22,11 +25,10 @@ public:
   ImageViewer();
 
 private slots:
-  void open();
+  bool open();
   void zoomIn();
   void zoomOut();
   void normalSize();
-  void fitToWindow();
   void about();
 
 private:
@@ -34,11 +36,13 @@ private:
   void createMenus();
   void createToolBars();
   void updateActions();
-  void scaleImage(double factor);
-  void adjustScrollBar(QScrollBar *scrollBar, double factor);
+  void scaleImage( double factor, bool absolute = false );
 
-  QScrollArea *scrollArea;
-  RenderArea  *renderArea;
+  QGraphicsView  *view;
+  QGraphicsScene *scene;
+  QGraphicsPixmapItem *pixmapItem;
+  QPixmap        pixmap;
+  
   double scaleFactor;
   
   QHBoxLayout *centralWidgetLayout;
@@ -49,7 +53,6 @@ private:
   QAction *zoomInAct;
   QAction *zoomOutAct;
   QAction *normalSizeAct;
-  QAction *fitToWindowAct;
   QAction *aboutAct;
   QAction *aboutQtAct;
 
