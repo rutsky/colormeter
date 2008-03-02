@@ -1,23 +1,21 @@
 #include <QtGui>
 
 #include "imageviewer.h"
+#include "renderarea.h"
 
 ImageViewer::ImageViewer()
 {
-  pixmapItem = new QGraphicsPixmapItem;
-  scene = new QGraphicsScene;
-  scene->addItem(pixmapItem);
-  view  = new QGraphicsView(scene);
+  renderArea_ = new RenderArea;
     
-  centralWidgetLayout = new QHBoxLayout;
-  centralWidgetLayout->addWidget(view);
-  centralWidgetLayout->addWidget(new QPushButton("One"));
-  centralWidgetLayout->addWidget(new QPushButton("Two"));
+  centralWidgetLayout_ = new QHBoxLayout;
+  centralWidgetLayout_->addWidget(renderArea_);
+  centralWidgetLayout_->addWidget(new QPushButton("One"));
+  centralWidgetLayout_->addWidget(new QPushButton("Two"));
 
-  centralWidget = new QWidget;
-  centralWidget->setLayout(centralWidgetLayout);
+  centralWidget_ = new QWidget;
+  centralWidget_->setLayout(centralWidgetLayout_);
  
-  setCentralWidget(centralWidget);
+  setCentralWidget(centralWidget_);
 
   createActions();
   updateActions();
@@ -34,16 +32,13 @@ bool ImageViewer::open()
       tr("Images (*.png *.xpm *.jpg *.jpeg *.bmp *.gif *.pbm *.pgm *.ppm *.tiff *.tif *.xbm *.xpm);;Any files (*)"));
   if (!fileName.isEmpty())
   {
-    QPixmap newPixmap(fileName);
-    if (newPixmap.isNull())
+    QPixmap pixmap(fileName);
+    if (pixmap.isNull())
       QMessageBox::information(this, tr("Image Viewer"), tr("Cannot load %1.").arg(fileName));
     else
     {
-      scaleFactor = 1.0;
-      
-      pixmap = newPixmap;
-      pixmapItem->setPixmap(pixmap);
-      
+      renderArea_->setPixmap(pixmap);
+      scaleFactor_ = 1.0;
       updateActions();
       
       return true;
@@ -88,74 +83,74 @@ void ImageViewer::about()
 
 void ImageViewer::createActions()
 {
-  openAct = new QAction(QIcon(":/images/open.png"), tr("&Open..."), this);
-  openAct->setShortcut(tr("Ctrl+O"));
-  openAct->setStatusTip(tr("Open an existing file"));
-  connect(openAct, SIGNAL(triggered()), this, SLOT(open()));
+  openAct_ = new QAction(QIcon(":/images/open.png"), tr("&Open..."), this);
+  openAct_->setShortcut(tr("Ctrl+O"));
+  openAct_->setStatusTip(tr("Open an existing file"));
+  connect(openAct_, SIGNAL(triggered()), this, SLOT(open()));
 
-  exitAct = new QAction(tr("E&xit"), this);
-  exitAct->setShortcut(tr("Ctrl+Q"));
-  connect(exitAct, SIGNAL(triggered()), this, SLOT(close()));
+  exitAct_ = new QAction(tr("E&xit"), this);
+  exitAct_->setShortcut(tr("Ctrl+Q"));
+  connect(exitAct_, SIGNAL(triggered()), this, SLOT(close()));
 
-  zoomInAct = new QAction(tr("Zoom &In"), this);
-  zoomInAct->setShortcut(tr("Ctrl++"));
-  connect(zoomInAct, SIGNAL(triggered()), this, SLOT(zoomIn()));
+  zoomInAct_ = new QAction(tr("Zoom &In"), this);
+  zoomInAct_->setShortcut(tr("Ctrl++"));
+  connect(zoomInAct_, SIGNAL(triggered()), this, SLOT(zoomIn()));
 
-  zoomOutAct = new QAction(tr("Zoom &Out"), this);
-  zoomOutAct->setShortcut(tr("Ctrl+-"));
-  connect(zoomOutAct, SIGNAL(triggered()), this, SLOT(zoomOut()));
+  zoomOutAct_ = new QAction(tr("Zoom &Out"), this);
+  zoomOutAct_->setShortcut(tr("Ctrl+-"));
+  connect(zoomOutAct_, SIGNAL(triggered()), this, SLOT(zoomOut()));
 
-  normalSizeAct = new QAction(tr("&Normal Size"), this);
-  normalSizeAct->setShortcut(tr("Ctrl+S"));
-  connect(normalSizeAct, SIGNAL(triggered()), this, SLOT(normalSize()));
+  normalSizeAct_ = new QAction(tr("&Normal Size"), this);
+  normalSizeAct_->setShortcut(tr("Ctrl+S"));
+  connect(normalSizeAct_, SIGNAL(triggered()), this, SLOT(normalSize()));
 
-  aboutAct = new QAction(tr("&About"), this);
-  connect(aboutAct, SIGNAL(triggered()), this, SLOT(about()));
+  aboutAct_ = new QAction(tr("&About"), this);
+  connect(aboutAct_, SIGNAL(triggered()), this, SLOT(about()));
 
-  aboutQtAct = new QAction(tr("About &Qt"), this);
-  connect(aboutQtAct, SIGNAL(triggered()), qApp, SLOT(aboutQt()));
+  aboutQtAct_ = new QAction(tr("About &Qt"), this);
+  connect(aboutQtAct_, SIGNAL(triggered()), qApp, SLOT(aboutQt()));
 }
 
 void ImageViewer::createMenus()
 {
-  fileMenu = new QMenu(tr("&File"), this);
-  fileMenu->addAction(openAct);
-  fileMenu->addSeparator();
-  fileMenu->addAction(exitAct);
+  fileMenu_ = new QMenu(tr("&File"), this);
+  fileMenu_->addAction(openAct_);
+  fileMenu_->addSeparator();
+  fileMenu_->addAction(exitAct_);
 
-  viewMenu = new QMenu(tr("&View"), this);
-  viewMenu->addAction(zoomInAct);
-  viewMenu->addAction(zoomOutAct);
-  viewMenu->addAction(normalSizeAct);
+  viewMenu_ = new QMenu(tr("&View"), this);
+  viewMenu_->addAction(zoomInAct_);
+  viewMenu_->addAction(zoomOutAct_);
+  viewMenu_->addAction(normalSizeAct_);
 
-  helpMenu = new QMenu(tr("&Help"), this);
-  helpMenu->addAction(aboutAct);
-  helpMenu->addAction(aboutQtAct);
+  helpMenu_ = new QMenu(tr("&Help"), this);
+  helpMenu_->addAction(aboutAct_);
+  helpMenu_->addAction(aboutQtAct_);
 
-  menuBar()->addMenu(fileMenu);
-  menuBar()->addMenu(viewMenu);
-  menuBar()->addMenu(helpMenu);
+  menuBar()->addMenu(fileMenu_);
+  menuBar()->addMenu(viewMenu_);
+  menuBar()->addMenu(helpMenu_);
 }
 
 void ImageViewer::createToolBars()
 {
-  viewToolBar = addToolBar(tr("File"));
-  viewToolBar->addAction(openAct);
+  viewToolBar_ = addToolBar(tr("File"));
+  viewToolBar_->addAction(openAct_);
 }
 
 void ImageViewer::updateActions()
 {
-  if (pixmapItem->pixmap().isNull())
+  if (renderArea_->pixmap().isNull())
   {
-    normalSizeAct->setEnabled(false);
-    zoomInAct->setEnabled(false);
-    zoomOutAct->setEnabled(false);
+    normalSizeAct_->setEnabled(false);
+    zoomInAct_->setEnabled(false);
+    zoomOutAct_->setEnabled(false);
   }
   else
   {
-    normalSizeAct->setEnabled(true);
-    zoomInAct->setEnabled(scaleFactor <= 16.0);
-    zoomOutAct->setEnabled(scaleFactor >= 0.125);
+    normalSizeAct_->setEnabled(true);
+    zoomInAct_->setEnabled(scaleFactor_ <= 16.0);
+    zoomOutAct_->setEnabled(scaleFactor_ >= 0.125);
   }
 }
 
@@ -163,13 +158,13 @@ void ImageViewer::scaleImage( double factor, bool absolute )
 {
   if (absolute)
   {
-    scaleFactor = factor;
-    view->setTransform(QTransform().scale(scaleFactor, scaleFactor));
+    scaleFactor_ = factor;
+    renderArea_->setScale(factor, absolute);
   }
   else
   {
-    scaleFactor *= factor;
-    view->scale(factor, factor);
+    scaleFactor_ *= factor;
+    renderArea_->setScale(factor, absolute);
   }
   
   updateActions();

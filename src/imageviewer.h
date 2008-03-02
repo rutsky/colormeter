@@ -3,17 +3,11 @@
 
 #include <QMainWindow>
 
+class QWidget;
 class QAction;
-class QLabel;
 class QMenu;
 class QToolBar;
-class QScrollArea;
-class QScrollBar;
-class QWidget;
 class QHBoxLayout;
-class QGraphicsView;
-class QGraphicsScene;
-class QGraphicsPixmapItem;
 
 class RenderArea;
  
@@ -32,35 +26,33 @@ private slots:
   void about();
 
 private:
+  void scaleImage( double factor, bool absolute = false );
   void createActions();
   void createMenus();
   void createToolBars();
   void updateActions();
-  void scaleImage( double factor, bool absolute = false );
 
-  QGraphicsView  *view;
-  QGraphicsScene *scene;
-  QGraphicsPixmapItem *pixmapItem;
-  QPixmap        pixmap;
+private:
+  double scaleFactor_;
   
-  double scaleFactor;
+  RenderArea *renderArea_;
   
-  QHBoxLayout *centralWidgetLayout;
-  QWidget     *centralWidget;
+  QHBoxLayout *centralWidgetLayout_;
+  QWidget     *centralWidget_;
 
-  QAction *openAct;
-  QAction *exitAct;
-  QAction *zoomInAct;
-  QAction *zoomOutAct;
-  QAction *normalSizeAct;
-  QAction *aboutAct;
-  QAction *aboutQtAct;
+  QAction *openAct_;
+  QAction *exitAct_;
+  QAction *zoomInAct_;
+  QAction *zoomOutAct_;
+  QAction *normalSizeAct_;
+  QAction *aboutAct_;
+  QAction *aboutQtAct_;
 
-  QMenu *fileMenu;
-  QMenu *viewMenu;
-  QMenu *helpMenu;
+  QMenu *fileMenu_;
+  QMenu *viewMenu_;
+  QMenu *helpMenu_;
   
-  QToolBar *viewToolBar;
+  QToolBar *viewToolBar_;
 };
 
 #endif 

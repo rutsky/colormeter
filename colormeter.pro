@@ -2,20 +2,31 @@ TEMPLATE = app
 
 CONFIG += warn_on \
           qt \
-          thread
-
-DEPENDPATH += src \
-              resources
+          thread \
+          resources
 
 DESTDIR     = bin
+
 OBJECTS_DIR = tmp
 MOC_DIR     = tmp
 RCC_DIR     = tmp
+# UI_DIR      = tmp
 
-HEADERS   += imageviewer.h
-SOURCES   += main.cpp imageviewer.cpp
-RESOURCES += colormeter.qrc
+HEADERS   += src/imageviewer.h \
+             src/renderarea.h
+SOURCES   += src/main.cpp \
+             src/imageviewer.cpp \
+             src/renderarea.cpp
+RESOURCES += resources/colormeter.qrc
 
-TARGET = colormeter
-
-
+macx {
+  TARGET = ColorMeter
+}
+unix {
+  TARGET = colormeter
+  CONFIG += debug   # debug
+}
+win32 {
+  TARGET = ColorMeter
+  CONFIG -= debug_and_release
+}
