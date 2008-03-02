@@ -4,7 +4,18 @@
 #include "renderarea.h"
 
 ImageViewer::ImageViewer()
+  : positiveScales_  ( 4 )
+  , negativeScales_  ( 4 )
+  , normalScaleIndex_( negativeScales_ )
 {
+  // Initialzing scales
+  for (int i = negativeScales_ + 1; i >= 2; --i)
+    scaleFactors_ << 1.0 / i;
+  scaleFactors_ << 1.0;
+  for (int i = 2; i <= positiveScales_ + 1; ++i)
+    scaleFactors_ << 1.0 * i;
+  
+  // Initializing widgets
   renderArea_ = new RenderArea;
     
   centralWidgetLayout_ = new QHBoxLayout;
@@ -18,7 +29,6 @@ ImageViewer::ImageViewer()
   setCentralWidget(centralWidget_);
 
   createActions();
-  updateActions();
   createMenus();
   createToolBars();
 
@@ -38,9 +48,7 @@ bool ImageViewer::open()
     else
     {
       renderArea_->setPixmap(pixmap);
-      scaleFactor_ = 1.0;
-      updateActions();
-      
+      sceneScaleChanged(normalScaleIndex_);
       return true;
     }
   }
@@ -48,19 +56,10 @@ bool ImageViewer::open()
   return false;
 }
 
-void ImageViewer::zoomIn()
+void ImageViewer::sceneScaleChanged( int index )
 {
-  scaleImage(2.0);
-}
-
-void ImageViewer::zoomOut()
-{
-  scaleImage(0.5);
-}
-
-void ImageViewer::normalSize()
-{
-  scaleImage(1.0, true);
+  Q_ASSERT(index >= 0 && index < scaleFactors_.size());
+  renderArea_->setScale(scaleFactors_[index], true);
 }
 
 void ImageViewer::about()
@@ -92,18 +91,6 @@ void ImageViewer::createActions()
   exitAct_->setShortcut(tr("Ctrl+Q"));
   connect(exitAct_, SIGNAL(triggered()), this, SLOT(close()));
 
-  zoomInAct_ = new QAction(tr("Zoom &In"), this);
-  zoomInAct_->setShortcut(tr("Ctrl++"));
-  connect(zoomInAct_, SIGNAL(triggered()), this, SLOT(zoomIn()));
-
-  zoomOutAct_ = new QAction(tr("Zoom &Out"), this);
-  zoomOutAct_->setShortcut(tr("Ctrl+-"));
-  connect(zoomOutAct_, SIGNAL(triggered()), this, SLOT(zoomOut()));
-
-  normalSizeAct_ = new QAction(tr("&Normal Size"), this);
-  normalSizeAct_->setShortcut(tr("Ctrl+S"));
-  connect(normalSizeAct_, SIGNAL(triggered()), this, SLOT(normalSize()));
-
   aboutAct_ = new QAction(tr("&About"), this);
   connect(aboutAct_, SIGNAL(triggered()), this, SLOT(about()));
 
@@ -118,17 +105,11 @@ void ImageViewer::createMenus()
   fileMenu_->addSeparator();
   fileMenu_->addAction(exitAct_);
 
-  viewMenu_ = new QMenu(tr("&View"), this);
-  viewMenu_->addAction(zoomInAct_);
-  viewMenu_->addAction(zoomOutAct_);
-  viewMenu_->addAction(normalSizeAct_);
-
   helpMenu_ = new QMenu(tr("&Help"), this);
   helpMenu_->addAction(aboutAct_);
   helpMenu_->addAction(aboutQtAct_);
 
   menuBar()->addMenu(fileMenu_);
-  menuBar()->addMenu(viewMenu_);
   menuBar()->addMenu(helpMenu_);
 }
 
@@ -136,36 +117,15 @@ void ImageViewer::createToolBars()
 {
   viewToolBar_ = addToolBar(tr("File"));
   viewToolBar_->addAction(openAct_);
-}
-
-void ImageViewer::updateActions()
-{
-  if (renderArea_->pixmap().isNull())
-  {
-    normalSizeAct_->setEnabled(false);
-    zoomInAct_->setEnabled(false);
-    zoomOutAct_->setEnabled(false);
-  }
-  else
-  {
-    normalSizeAct_->setEnabled(true);
-    zoomInAct_->setEnabled(scaleFactor_ <= 16.0);
-    zoomOutAct_->setEnabled(scaleFactor_ >= 0.125);
-  }
-}
-
-void ImageViewer::scaleImage( double factor, bool absolute )
-{
-  if (absolute)
-  {
-    scaleFactor_ = factor;
-    renderArea_->setScale(factor, absolute);
-  }
-  else
-  {
-    scaleFactor_ *= factor;
-    renderArea_->setScale(factor, absolute);
-  }
   
-  updateActions();
+  sceneScaleCombo_ = new QComboBox;
+  QStringList scales;
+  for (int i = 0; i < scaleFactors_.size(); ++i)
+    scales << tr("%1%").arg(100 * scaleFactors_[i], 0, 'f', 1);
+  sceneScaleCombo_->addItems(scales);
+  sceneScaleCombo_->setCurrentIndex(normalScaleIndex_);
+  connect(sceneScaleCombo_, SIGNAL(currentIndexChanged( int )),
+          this, SLOT(sceneScaleChanged( int )));
+  
+  viewToolBar_->addWidget(sceneScaleCombo_);
 }
