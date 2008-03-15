@@ -9,9 +9,11 @@ class QMenu;
 class QToolBar;
 class QHBoxLayout;
 class QComboBox;
+class QLabel;
 
 class RenderArea;
  
+// TODO: Normal signals and slots!
 class ImageViewer : public QMainWindow
 {
   Q_OBJECT
@@ -29,12 +31,14 @@ private slots:
   void about();
   void sceneScaleChangeTo( int index );
   void sceneScaleChanged( int index );
+  void updateStatusBar();
 
 private:
   void scaleImage( double factor, bool absolute = false );
   void createActions();
   void createMenus();
   void createToolBars();
+  void createStatusBar();
 
 private:
   int const positiveScales_, negativeScales_;
@@ -47,6 +51,8 @@ private:
   QHBoxLayout *centralWidgetLayout_;
   QWidget     *centralWidget_;
   QComboBox   *sceneScaleCombo_;
+  QLabel      *statusBarText_;
+  QString     fileName_;
 
   QAction *openAct_;
   QAction *exitAct_;

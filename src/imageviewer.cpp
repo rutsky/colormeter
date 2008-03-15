@@ -33,6 +33,7 @@ ImageViewer::ImageViewer()
   createActions();
   createMenus();
   createToolBars();
+  createStatusBar();
   
   connect(renderArea_, SIGNAL(zoomIn()),  this, SLOT(zoomIn ( void )));
   connect(renderArea_, SIGNAL(zoomOut()), this, SLOT(zoomOut( void )));
@@ -54,11 +55,22 @@ void ImageViewer::open()
     {
       renderArea_->setPixmap(pixmap);
       sceneScaleChanged(normalScaleIndex_);
+      fileName_ = fileName;
+      updateStatusBar();
       return; // Success
     }
   }
   
   return; // Failure
+}
+
+void ImageViewer::updateStatusBar()
+{
+  QPixmap const &pixmap = renderArea_->pixmap();
+  if (pixmap.isNull())
+    statusBarText_->setText(tr("Ready"));
+  else
+    statusBarText_->setText(tr("<b>%2x%3x%4</b> %1").arg(fileName_).arg(pixmap.width()).arg(pixmap.height()).arg(pixmap.depth()));
 }
 
 void ImageViewer::sceneScaleChangeTo( int index )
@@ -172,4 +184,12 @@ void ImageViewer::createToolBars()
   normalSize();
   
   viewToolBar_->addWidget(sceneScaleCombo_);
+}
+
+void ImageViewer::createStatusBar()
+{
+  statusBarText_ = new QLabel();
+  statusBarText_->setFrameStyle(QFrame::NoFrame);
+  statusBar()->addWidget(statusBarText_, 1);
+  updateStatusBar();
 }

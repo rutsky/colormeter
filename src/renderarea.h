@@ -18,7 +18,7 @@ signals:
   void zoomIn();
   void zoomOut();
   
-public:
+public slots:
   void setPixmap( QPixmap const &pixmap );
   void setScale( double scaleFactor, bool absolute = false );
   
@@ -30,11 +30,12 @@ protected:
   
 private:
   void setDragging( bool drag );
+  void replaceRenderingPixmap( QPixmap const &pixmap );
 
 private:
   bool drag_;
   
-  QPixmap pixmap_;
+  QPixmap    pixmap_;    // Original pixmap
   
   QGraphicsScene      *scene_;
   QGraphicsPixmapItem *pixmapItem_;

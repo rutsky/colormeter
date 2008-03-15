@@ -17,9 +17,10 @@ RenderArea::RenderArea( QWidget *parent )
   // TODO: Some caching can improve rendering speed...
   this->setCacheMode(QGraphicsView::CacheBackground);
   
-  //this->setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
   this->setResizeAnchor(QGraphicsView::AnchorViewCenter);
   this->setTransformationAnchor(QGraphicsView::AnchorViewCenter);
+  
+  this->setToolTip(tr("<b>Hold Control</b> and drag with left mouse button or zoom with wheel"));
 }
 
 QPixmap const & RenderArea::pixmap() const
@@ -29,15 +30,9 @@ QPixmap const & RenderArea::pixmap() const
 
 void RenderArea::setPixmap( QPixmap const &pixmap )
 {
-  this->setTransform(QTransform());
-  
   pixmap_ = pixmap;
-  
-  scene_->removeItem(pixmapItem_);
-  delete pixmapItem_;
-  this->setSceneRect(pixmap_.rect());
-  
-  pixmapItem_ = scene_->addPixmap(pixmap_);
+  this->setTransform(QTransform());
+  replaceRenderingPixmap(pixmap_);
 }
 
 void RenderArea::setScale( double factor, bool absolute )
@@ -90,6 +85,9 @@ void RenderArea::wheelEvent( QWheelEvent *event )
 
 void RenderArea::setDragging( bool drag )
 {
+  if (drag_ == drag)
+    return;
+  
   drag_ = drag;
   if (drag)
   {
@@ -101,4 +99,12 @@ void RenderArea::setDragging( bool drag )
     this->setDragMode(QGraphicsView::NoDrag);
     this->setTransformationAnchor(QGraphicsView::AnchorViewCenter);
   }
+}
+
+void RenderArea::replaceRenderingPixmap( QPixmap const &pixmap )
+{
+  scene_->removeItem(pixmapItem_);
+  delete pixmapItem_;
+  this->setSceneRect(pixmap.rect());
+  pixmapItem_ = scene_->addPixmap(pixmap);
 }
