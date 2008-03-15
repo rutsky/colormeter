@@ -15,6 +15,8 @@ ImageViewer::ImageViewer()
   for (int i = 2; i <= positiveScales_ + 1; ++i)
     scaleFactors_ << 1.0 * i;
   
+  this->installEventFilter(this);
+  
   // Initializing widgets
   renderArea_ = new RenderArea;
     
@@ -31,12 +33,15 @@ ImageViewer::ImageViewer()
   createActions();
   createMenus();
   createToolBars();
+  
+  connect(renderArea_, SIGNAL(zoomIn()),  this, SLOT(zoomIn ( void )));
+  connect(renderArea_, SIGNAL(zoomOut()), this, SLOT(zoomOut( void )));
 
   setWindowTitle(tr("ColorMeter"));
   resize(500, 400);
 }
 
-bool ImageViewer::open()
+void ImageViewer::open()
 {
   QString fileName = QFileDialog::getOpenFileName(this, tr("Open File"), QDir::currentPath(),
       tr("Images (*.png *.xpm *.jpg *.jpeg *.bmp *.gif *.pbm *.pgm *.ppm *.tiff *.tif *.xbm *.xpm);;Any files (*)"));
@@ -49,17 +54,38 @@ bool ImageViewer::open()
     {
       renderArea_->setPixmap(pixmap);
       sceneScaleChanged(normalScaleIndex_);
-      return true;
+      return; // Success
     }
   }
   
-  return false;
+  return; // Failure
+}
+
+void ImageViewer::sceneScaleChangeTo( int index )
+{
+  if (index >= 0 && index < scaleFactors_.size())
+    sceneScaleCombo_->setCurrentIndex(index);
 }
 
 void ImageViewer::sceneScaleChanged( int index )
 {
   Q_ASSERT(index >= 0 && index < scaleFactors_.size());
   renderArea_->setScale(scaleFactors_[index], true);
+}
+
+void ImageViewer::normalSize()
+{
+  sceneScaleChangeTo(normalScaleIndex_);
+}
+
+void ImageViewer::zoomIn()
+{
+  sceneScaleChangeTo(sceneScaleCombo_->currentIndex() + 1);
+}
+
+void ImageViewer::zoomOut()
+{
+  sceneScaleChangeTo(sceneScaleCombo_->currentIndex() - 1);
 }
 
 void ImageViewer::about()
@@ -83,13 +109,25 @@ void ImageViewer::about()
 void ImageViewer::createActions()
 {
   openAct_ = new QAction(QIcon(":/images/open.png"), tr("&Open..."), this);
-  openAct_->setShortcut(tr("Ctrl+O"));
+  openAct_->setShortcut(QKeySequence::Open);
   openAct_->setStatusTip(tr("Open an existing file"));
   connect(openAct_, SIGNAL(triggered()), this, SLOT(open()));
 
   exitAct_ = new QAction(tr("E&xit"), this);
   exitAct_->setShortcut(tr("Ctrl+Q"));
   connect(exitAct_, SIGNAL(triggered()), this, SLOT(close()));
+  
+  normalSizeAct_ = new QAction(tr("&Normal size"), this);
+  normalSizeAct_->setShortcut(tr("Ctrl+S"));
+  connect(normalSizeAct_, SIGNAL(triggered()), this, SLOT(normalSize()));
+  
+  zoomInAct_ = new QAction(tr("Zoom &in"), this);
+  zoomInAct_->setShortcut(QKeySequence::ZoomIn);
+  connect(zoomInAct_, SIGNAL(triggered()), this, SLOT(zoomIn()));
+  
+  zoomOutAct_ = new QAction(tr("Zoom &out"), this);
+  zoomOutAct_->setShortcut(QKeySequence::ZoomOut);
+  connect(zoomOutAct_, SIGNAL(triggered()), this, SLOT(zoomOut()));
 
   aboutAct_ = new QAction(tr("&About"), this);
   connect(aboutAct_, SIGNAL(triggered()), this, SLOT(about()));
@@ -105,11 +143,17 @@ void ImageViewer::createMenus()
   fileMenu_->addSeparator();
   fileMenu_->addAction(exitAct_);
 
+  viewMenu_ = new QMenu(tr("&View"), this);
+  viewMenu_->addAction(normalSizeAct_); 
+  viewMenu_->addAction(zoomInAct_);
+  viewMenu_->addAction(zoomOutAct_);
+  
   helpMenu_ = new QMenu(tr("&Help"), this);
   helpMenu_->addAction(aboutAct_);
   helpMenu_->addAction(aboutQtAct_);
 
   menuBar()->addMenu(fileMenu_);
+  menuBar()->addMenu(viewMenu_);
   menuBar()->addMenu(helpMenu_);
 }
 
@@ -123,9 +167,9 @@ void ImageViewer::createToolBars()
   for (int i = 0; i < scaleFactors_.size(); ++i)
     scales << tr("%1%").arg(100 * scaleFactors_[i], 0, 'f', 1);
   sceneScaleCombo_->addItems(scales);
-  sceneScaleCombo_->setCurrentIndex(normalScaleIndex_);
   connect(sceneScaleCombo_, SIGNAL(currentIndexChanged( int )),
           this, SLOT(sceneScaleChanged( int )));
+  normalSize();
   
   viewToolBar_->addWidget(sceneScaleCombo_);
 }

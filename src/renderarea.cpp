@@ -4,6 +4,7 @@
 
 RenderArea::RenderArea( QWidget *parent )
   : QGraphicsView(parent)
+  , drag_        (false)
 {
   this->setBackgroundRole(QPalette::Base);
   this->setAutoFillBackground(true);
@@ -14,10 +15,11 @@ RenderArea::RenderArea( QWidget *parent )
   this->setScene(scene_);
   this->setRenderHint(QPainter::SmoothPixmapTransform, false);
   // TODO: Some caching can improve rendering speed...
-  //this->setCacheMode(QGraphicsView::CacheBackground);
-  //this->setDragMode(QGraphicsView::ScrollHandDrag);
+  this->setCacheMode(QGraphicsView::CacheBackground);
+  
   //this->setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
-  //this->setResizeAnchor(QGraphicsView::AnchorViewCenter);
+  this->setResizeAnchor(QGraphicsView::AnchorViewCenter);
+  this->setTransformationAnchor(QGraphicsView::AnchorViewCenter);
 }
 
 QPixmap const & RenderArea::pixmap() const
@@ -44,4 +46,59 @@ void RenderArea::setScale( double factor, bool absolute )
     this->setTransform(QTransform().scale(factor, factor));
   else
     this->scale(factor, factor);
+}
+
+// TODO: Incorrect keyboard modifiers
+
+void RenderArea::keyPressEvent( QKeyEvent *event )
+{
+  if (event->key() == Qt::Key_Control)
+    setDragging(true);
+  else
+    QGraphicsView::keyPressEvent(event);
+}
+
+void RenderArea::keyReleaseEvent( QKeyEvent *event )
+{
+  if (event->key() == Qt::Key_Control)
+    setDragging(false);
+  else
+    QGraphicsView::keyPressEvent(event);
+}
+
+void RenderArea::mouseMoveEvent( QMouseEvent *event )
+{
+  setDragging(event->modifiers() & Qt::ControlModifier);
+  QGraphicsView::mouseMoveEvent(event);
+}
+
+void RenderArea::wheelEvent( QWheelEvent *event )
+{
+  if (drag_)
+  {
+    for (int i = 0; i < abs(event->delta() / 120); ++i)
+    {
+      if (event->delta() < 0)
+        emit zoomIn();
+      else 
+        emit zoomOut();
+    }
+  }
+  else
+    QGraphicsView::wheelEvent(event);
+}
+
+void RenderArea::setDragging( bool drag )
+{
+  drag_ = drag;
+  if (drag)
+  {
+    this->setDragMode(QGraphicsView::ScrollHandDrag);
+    this->setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
+  }
+  else
+  {
+    this->setDragMode(QGraphicsView::NoDrag);
+    this->setTransformationAnchor(QGraphicsView::AnchorViewCenter);
+  }
 }

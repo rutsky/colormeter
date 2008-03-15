@@ -1,7 +1,7 @@
 /* ColorMeter
  * Counting some statistics about colors.
  * Based on imageviewer and basicdrawing examples from Qt tutorial.
- * Bob Rutsky <rutsky_v@rambler.ru>
+ * Bob Rutsky <altsysrq@gmail.ru>
  * 25.02.2008
  */
 

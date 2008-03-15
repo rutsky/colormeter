@@ -19,9 +19,15 @@ class ImageViewer : public QMainWindow
 public:
   ImageViewer();
 
+public slots:
+  void normalSize();
+  void zoomIn();
+  void zoomOut();
+  
 private slots:
-  bool open();
+  void open();
   void about();
+  void sceneScaleChangeTo( int index );
   void sceneScaleChanged( int index );
 
 private:
@@ -35,6 +41,7 @@ private:
   QVector<double> scaleFactors_;
   int const normalScaleIndex_;
   
+private:
   RenderArea *renderArea_;
   
   QHBoxLayout *centralWidgetLayout_;
@@ -43,10 +50,14 @@ private:
 
   QAction *openAct_;
   QAction *exitAct_;
+  QAction *zoomInAct_;
+  QAction *zoomOutAct_;
+  QAction *normalSizeAct_;
   QAction *aboutAct_;
   QAction *aboutQtAct_;
 
   QMenu *fileMenu_;
+  QMenu *viewMenu_;
   QMenu *helpMenu_;
   
   QToolBar *viewToolBar_;
