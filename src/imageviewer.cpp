@@ -37,6 +37,7 @@ ImageViewer::ImageViewer()
   
   connect(renderArea_, SIGNAL(zoomIn()),  this, SLOT(zoomIn ( void )));
   connect(renderArea_, SIGNAL(zoomOut()), this, SLOT(zoomOut( void )));
+  connect(this, SIGNAL(pixmapChanged( QPixmap const &, QString const & )), renderArea_, SLOT(setPixmap( QPixmap const & )));
 
   setWindowTitle(tr("ColorMeter"));
   resize(500, 400);
@@ -53,10 +54,9 @@ void ImageViewer::open()
       QMessageBox::information(this, tr("Image Viewer"), tr("Cannot load %1.").arg(fileName));
     else
     {
-      renderArea_->setPixmap(pixmap);
-      sceneScaleChanged(normalScaleIndex_);
       fileName_ = fileName;
-      updateStatusBar();
+      emit pixmapChanged(pixmap, fileName);
+      
       return; // Success
     }
   }
@@ -66,11 +66,15 @@ void ImageViewer::open()
 
 void ImageViewer::updateStatusBar()
 {
-  QPixmap const &pixmap = renderArea_->pixmap();
+  ImageViewer::updatePixmapInfo(renderArea_->pixmap(), QString());
+}
+
+void ImageViewer::updatePixmapInfo( QPixmap const &pixmap, QString const &fileName )
+{
   if (pixmap.isNull())
     statusBarText_->setText(tr("Ready"));
   else
-    statusBarText_->setText(tr("<b>%2x%3x%4</b> %1").arg(fileName_).arg(pixmap.width()).arg(pixmap.height()).arg(pixmap.depth()));
+    statusBarText_->setText(tr("<b>%2x%3x%4</b> %1").arg(fileName).arg(pixmap.width()).arg(pixmap.height()).arg(pixmap.depth()));
 }
 
 void ImageViewer::sceneScaleChangeTo( int index )
@@ -103,19 +107,8 @@ void ImageViewer::zoomOut()
 void ImageViewer::about()
 {
   // TODO
-  QMessageBox::about(this, tr("About Image Viewer"),
-      tr("<p>The <b>Image Viewer</b> example shows how to combine QLabel "
-         "and QScrollArea to display an image. QLabel is typically used "
-         "for displaying a text, but it can also display an image. "
-         "QScrollArea provides a scrolling view around another widget. "
-         "If the child widget exceeds the size of the frame, QScrollArea "
-         "automatically provides scroll bars. </p><p>The example "
-         "demonstrates how QLabel's ability to scale its contents "
-         "(QLabel::scaledContents), and QScrollArea's ability to "
-         "automatically resize its contents "
-         "(QScrollArea::widgetResizable), can be used to implement "
-         "zooming and scaling features. </p><p>In addition the example "
-         "shows how to use QPainter to print an image.</p>"));
+  QMessageBox::about(this, tr("ColorMeter"),
+      tr("<p>The <b>ColorMeter</b> or something...</p>"));
 }
 
 void ImageViewer::createActions()
@@ -191,5 +184,8 @@ void ImageViewer::createStatusBar()
   statusBarText_ = new QLabel();
   statusBarText_->setFrameStyle(QFrame::NoFrame);
   statusBar()->addWidget(statusBarText_, 1);
+  
+  connect(this, SIGNAL(pixmapChanged( QPixmap const &, QString const & )),
+          this, SLOT(updatePixmapInfo( QPixmap const &, QString const & )));
   updateStatusBar();
 }

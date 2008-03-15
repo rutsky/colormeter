@@ -21,17 +21,22 @@ class ImageViewer : public QMainWindow
 public:
   ImageViewer();
 
+signals:
+  void pixmapChanged( QPixmap const &pixmap, QString const &fileName );
+  
 public slots:
   void normalSize();
   void zoomIn();
   void zoomOut();
   
-private slots:
   void open();
   void about();
+  
   void sceneScaleChangeTo( int index );
   void sceneScaleChanged( int index );
+  
   void updateStatusBar();
+  void updatePixmapInfo( QPixmap const &pixmap, QString const &fileName );
 
 private:
   void scaleImage( double factor, bool absolute = false );
