@@ -22,17 +22,16 @@ ImageViewer::ImageViewer()
   renderArea_ = new RenderArea;
   colorStatistics_ = new ColorStatistics;
     
-  tabWidget_ = new QTabWidget;
-  tabWidget_->addTab(colorStatistics_, tr("Colors statistics"));
+  QTabWidget *tabWidget = new QTabWidget;
+  tabWidget->addTab(colorStatistics_, tr("Colors statistics"));
   
-  centralWidgetLayout_ = new QHBoxLayout;
-  centralWidgetLayout_->addWidget(renderArea_);
-  centralWidgetLayout_->addWidget(tabWidget_);
+  QSplitter *centralWidget = new QSplitter;
+  centralWidget->addWidget(renderArea_);
+  centralWidget->setCollapsible(0, false);
+  centralWidget->setStretchFactor(0, 1);
+  centralWidget->addWidget(tabWidget);
 
-  centralWidget_ = new QWidget;
-  centralWidget_->setLayout(centralWidgetLayout_);
- 
-  setCentralWidget(centralWidget_);
+  setCentralWidget(centralWidget);
 
   createActions();
   createMenus();
@@ -45,7 +44,7 @@ ImageViewer::ImageViewer()
   connect(this, SIGNAL(pixmapChanged( QPixmap const &, QString const & )), colorStatistics_, SLOT(setPixmap( QPixmap const & )));
 
   setWindowTitle(tr("ColorMeter"));
-  resize(500, 400);
+  resize(700, 500);
 }
 
 void ImageViewer::open()

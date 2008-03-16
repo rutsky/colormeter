@@ -56,12 +56,9 @@ private:
   RenderArea      *renderArea_;
   ColorStatistics *colorStatistics_;
   
-  QHBoxLayout *centralWidgetLayout_;
-  QWidget     *centralWidget_;
   QComboBox   *sceneScaleCombo_;
   QLabel      *statusBarText_;
   QString     fileName_;
-  QTabWidget  *tabWidget_;
 
   QAction *openAct_;
   QAction *exitAct_;
