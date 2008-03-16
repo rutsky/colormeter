@@ -20,10 +20,10 @@ ImageViewer::ImageViewer()
   
   // Initializing widgets
   renderArea_ = new RenderArea;
-  
+  colorStatistics_ = new ColorStatistics;
     
   tabWidget_ = new QTabWidget;
-  tabWidget_->addTab(new ColorStatistics, tr("Colors Statistics"));
+  tabWidget_->addTab(colorStatistics_, tr("Colors statistics"));
   
   centralWidgetLayout_ = new QHBoxLayout;
   centralWidgetLayout_->addWidget(renderArea_);
@@ -41,7 +41,8 @@ ImageViewer::ImageViewer()
   
   connect(renderArea_, SIGNAL(zoomIn()),  this, SLOT(zoomIn ( void )));
   connect(renderArea_, SIGNAL(zoomOut()), this, SLOT(zoomOut( void )));
-  connect(this, SIGNAL(pixmapChanged( QPixmap const &, QString const & )), renderArea_, SLOT(setPixmap( QPixmap const & )));
+  connect(this, SIGNAL(pixmapChanged( QPixmap const &, QString const & )), renderArea_,      SLOT(setPixmap( QPixmap const & )));
+  connect(this, SIGNAL(pixmapChanged( QPixmap const &, QString const & )), colorStatistics_, SLOT(setPixmap( QPixmap const & )));
 
   setWindowTitle(tr("ColorMeter"));
   resize(500, 400);

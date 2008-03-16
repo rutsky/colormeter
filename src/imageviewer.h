@@ -13,6 +13,7 @@ class QLabel;
 class QTabWidget;
 
 class RenderArea;
+class ColorStatistics;
  
 // TODO: Normal signals and slots!
 class ImageViewer : public QMainWindow
@@ -52,7 +53,8 @@ private:
   int const normalScaleIndex_;
   
 private:
-  RenderArea *renderArea_;
+  RenderArea      *renderArea_;
+  ColorStatistics *colorStatistics_;
   
   QHBoxLayout *centralWidgetLayout_;
   QWidget     *centralWidget_;
