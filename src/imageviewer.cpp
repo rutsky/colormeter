@@ -24,9 +24,10 @@ ImageViewer::ImageViewer()
     
   QSplitter *centralWidget = new QSplitter;
   centralWidget->addWidget(renderArea_);
-  centralWidget->setCollapsible(0, false);
-  centralWidget->setStretchFactor(0, 1);
   centralWidget->addWidget(colorStatistics_);
+  centralWidget->setCollapsible(0, false);
+  centralWidget->setStretchFactor(0, 1000); // TODO
+  centralWidget->setStretchFactor(1, 1);
 
   setCentralWidget(centralWidget);
 

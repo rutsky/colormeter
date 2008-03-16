@@ -7,6 +7,7 @@
 
 class QLabel;
 class QVBoxLayout;
+class QHBoxLayout;
 
 class ColorStatistics : public QWidget
 {
@@ -24,10 +25,14 @@ private slots:
 private:
   QPixmap pixmap_; // TODO: store only one copy of pixmap
   
-  // TODO: integer overflow
-  QMap<QRgb, long> colorsCounts_;
+  typedef QMap<QRgb, long> color_to_count_map_type;
+  typedef QMap<long, QRgb> count_to_color_map_type;
   
-  QVBoxLayout *mainLayout_;
+  // TODO: integer overflow
+  color_to_count_map_type colorToCount_;
+  count_to_color_map_type countToColor_;
+  
+  QHBoxLayout *mainLayout_;
   QLabel      *upperText_;
 };
 

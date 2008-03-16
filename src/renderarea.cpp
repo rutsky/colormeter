@@ -21,6 +21,8 @@ RenderArea::RenderArea( QWidget *parent )
   this->setTransformationAnchor(QGraphicsView::AnchorViewCenter);
   
   this->setToolTip(tr("<b>Hold Control</b> and drag with left mouse button or zoom with wheel"));
+  
+  this->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 }
 
 QPixmap const & RenderArea::pixmap() const
