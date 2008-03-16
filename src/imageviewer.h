@@ -10,6 +10,7 @@ class QToolBar;
 class QHBoxLayout;
 class QComboBox;
 class QLabel;
+class QTabWidget;
 
 class RenderArea;
  
@@ -58,6 +59,7 @@ private:
   QComboBox   *sceneScaleCombo_;
   QLabel      *statusBarText_;
   QString     fileName_;
+  QTabWidget  *tabWidget_;
 
   QAction *openAct_;
   QAction *exitAct_;
@@ -74,4 +76,4 @@ private:
   QToolBar *viewToolBar_;
 };
 
-#endif 
+#endif // IMAGEVIEWER_H

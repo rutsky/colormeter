@@ -2,11 +2,12 @@
 
 #include "imageviewer.h"
 #include "renderarea.h"
+#include "colorstat.h"
 
 ImageViewer::ImageViewer()
-  : positiveScales_  ( 4 )
-  , negativeScales_  ( 4 )
-  , normalScaleIndex_( negativeScales_ )
+  : positiveScales_  (4)
+  , negativeScales_  (4)
+  , normalScaleIndex_(negativeScales_)
 {
   // Initialzing scales
   for (int i = negativeScales_ + 1; i >= 2; --i)
@@ -19,11 +20,14 @@ ImageViewer::ImageViewer()
   
   // Initializing widgets
   renderArea_ = new RenderArea;
+  
     
+  tabWidget_ = new QTabWidget;
+  tabWidget_->addTab(new ColorStatistics, tr("Colors Statistics"));
+  
   centralWidgetLayout_ = new QHBoxLayout;
   centralWidgetLayout_->addWidget(renderArea_);
-  centralWidgetLayout_->addWidget(new QPushButton("One"));
-  centralWidgetLayout_->addWidget(new QPushButton("Two"));
+  centralWidgetLayout_->addWidget(tabWidget_);
 
   centralWidget_ = new QWidget;
   centralWidget_->setLayout(centralWidgetLayout_);

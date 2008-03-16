@@ -41,4 +41,4 @@ private:
   QGraphicsPixmapItem *pixmapItem_;
 };
 
-#endif 
+#endif // RENDERAREA_H

@@ -13,10 +13,12 @@ RCC_DIR     = tmp
 # UI_DIR      = tmp
 
 HEADERS   += src/imageviewer.h \
-             src/renderarea.h
+             src/renderarea.h \
+             src/colorstat.h
 SOURCES   += src/main.cpp \
              src/imageviewer.cpp \
-             src/renderarea.cpp
+             src/renderarea.cpp \
+             src/colorstat.cpp
 RESOURCES += resources/colormeter.qrc
 
 macx {
