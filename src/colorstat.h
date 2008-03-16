@@ -2,6 +2,8 @@
 #define COLORSTAT_H
 
 #include <QWidget>
+#include <QColor>
+#include <QMap>
 
 class QLabel;
 class QVBoxLayout;
@@ -21,6 +23,9 @@ private slots:
   
 private:
   QPixmap pixmap_; // TODO: store only one copy of pixmap
+  
+  // TODO: integer overflow
+  QMap<QRgb, long> colorsCounts_;
   
   QVBoxLayout *mainLayout_;
   QLabel      *upperText_;

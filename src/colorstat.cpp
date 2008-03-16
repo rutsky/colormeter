@@ -37,5 +37,23 @@ void ColorStatistics::updatePixmapInfo()
   else
   {
     upperText_->setText(tr("<p>%1 pixels</p>").arg(pixmap_.width() * pixmap_.height())); // TODO: integer overflow?
+    
+    QImage image = pixmap_.toImage();
+
+    QProgressDialog progress(tr("Couting colors..."), 0, 0, pixmap_.height(), this);
+    progress.setModal(true);
+   
+    for (int row = 0; row < pixmap_.height(); ++row)
+    {
+      progress.setValue(row);
+      qApp->processEvents();
+      if (progress.wasCanceled())
+      {
+        // TODO
+      }
+      
+      for (int column = 0; column < pixmap_.width(); ++column)
+        ++colorsCounts_[image.pixel(column, row)];
+    }
   }
 }
