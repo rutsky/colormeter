@@ -7,10 +7,19 @@ ColorStatistics::ColorStatistics( QWidget *parent )
 {
   upperText_ = new QLabel;
   
-  QVBoxLayout *mainLayout = new QVBoxLayout;
-  mainLayout->addWidget(upperText_);
-  mainLayout->addStretch(1);
-  setLayout(mainLayout);
+  QVBoxLayout *colorsStatisticsLayout = new QVBoxLayout;
+  colorsStatisticsLayout->addWidget(upperText_);
+  colorsStatisticsLayout->addStretch(1);
+  
+  QWidget *colorsStatisticsTabWidget = new QWidget;
+  colorsStatisticsTabWidget->setLayout(colorsStatisticsLayout);
+  
+  QTabWidget *tabWidget = new QTabWidget;
+  tabWidget->addTab(colorsStatisticsTabWidget, tr("Colors statistics"));
+  
+  mainLayout_ = new QVBoxLayout;
+  mainLayout_->addWidget(tabWidget);
+  setLayout(mainLayout_);
   
   updatePixmapInfo();
 }

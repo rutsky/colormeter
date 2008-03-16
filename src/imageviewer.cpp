@@ -22,14 +22,11 @@ ImageViewer::ImageViewer()
   renderArea_ = new RenderArea;
   colorStatistics_ = new ColorStatistics;
     
-  QTabWidget *tabWidget = new QTabWidget;
-  tabWidget->addTab(colorStatistics_, tr("Colors statistics"));
-  
   QSplitter *centralWidget = new QSplitter;
   centralWidget->addWidget(renderArea_);
   centralWidget->setCollapsible(0, false);
   centralWidget->setStretchFactor(0, 1);
-  centralWidget->addWidget(tabWidget);
+  centralWidget->addWidget(colorStatistics_);
 
   setCentralWidget(centralWidget);
 

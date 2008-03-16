@@ -4,6 +4,7 @@
 #include <QWidget>
 
 class QLabel;
+class QVBoxLayout;
 
 class ColorStatistics : public QWidget
 {
@@ -21,7 +22,8 @@ private slots:
 private:
   QPixmap pixmap_; // TODO: store only one copy of pixmap
   
-  QLabel *upperText_;
+  QVBoxLayout *mainLayout_;
+  QLabel      *upperText_;
 };
 
 #endif // COLORSTAT_H
