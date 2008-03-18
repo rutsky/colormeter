@@ -47,6 +47,7 @@ ImageViewer::ImageViewer()
 
 void ImageViewer::open()
 {
+  // TODO: Use QImageReader::supportedImageFormats().
   QString fileName = QFileDialog::getOpenFileName(this, tr("Open File"), QDir::currentPath(),
       tr("Images (*.png *.xpm *.jpg *.jpeg *.bmp *.gif *.pbm *.pgm *.ppm *.tiff *.tif *.xbm *.xpm);;Any files (*)"));
   if (!fileName.isEmpty())
