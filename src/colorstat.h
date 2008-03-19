@@ -4,10 +4,30 @@
 #include <QWidget>
 #include <QColor>
 #include <QMap>
+#include <QMultiMap>
+#include <QVector>
 
 class QLabel;
 class QVBoxLayout;
 class QHBoxLayout;
+
+struct ColorsInfo
+{
+  // TODO: Incapsulation
+  
+  // TODO: integer overflow?
+  typedef QMap     <QRgb, quint64> color_to_count_map_type;
+  typedef QMultiMap<quint64, QRgb> count_to_color_map_type;
+  
+  color_to_count_map_type colorToCount;
+  count_to_color_map_type countToColor;
+  
+  // Calculates nColors, minColor, avgColor, maxColor, colorVariance
+  void calcColorStats();
+    
+  quint64 nColors;
+  QRgb minColor, avgColor, maxColor, colorVariance;
+};
 
 class ColorStatistics : public QWidget
 {
@@ -20,17 +40,12 @@ public slots:
   void setPixmap( QPixmap const &pixmap );
   
 private slots:
-  void updatePixmapInfo();
+  void updateReport();
   
 private:
   QPixmap pixmap_; // TODO: store only one copy of pixmap
   
-  typedef QMap<QRgb, long> color_to_count_map_type;
-  typedef QMap<long, QRgb> count_to_color_map_type;
-  
-  // TODO: integer overflow
-  color_to_count_map_type colorToCount_;
-  count_to_color_map_type countToColor_;
+  QVector<ColorsInfo> layers_;
   
   QHBoxLayout *mainLayout_;
   QLabel      *upperText_;
