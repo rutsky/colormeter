@@ -15,7 +15,7 @@ namespace
 void ColorsInfo::calcColorStats()
 {
   //qDebug() << colorToCount.empty() << " " << colorToCount.size() << " " << countToColor.size(); // debug
-  Q_ASSERT(!colorToCount.empty() && colorToCount.size() == countToColor.size());
+  Q_ASSERT(!colorToCount.empty());
     
   minColor = qRgb(255, 255, 255);
   maxColor = qRgb(0, 0, 0);
@@ -152,23 +152,6 @@ void ColorStatistics::updateReport()
       }
     }
     
-    // Sorting colors
-    {
-      QProgressDialog progress(tr("Sorting colors..."), 0, 0, layer.colorToCount.size(), this);
-      progress.setModal(true);
-      // TODO: Progress cancellation handling
-      
-      long progressValue(0);
-      typedef ColorsInfo::color_to_count_map_type::const_iterator CI;
-      for (CI it = layer.colorToCount.begin(); it != layer.colorToCount.end(); ++it, ++progressValue)
-      {
-        progress.setValue(progressValue);
-        qApp->processEvents();
-
-        layer.countToColor.insert(it.value(), it.key());
-      }
-    }
-    
     layer.calcColorStats();
     
     // Filtering
@@ -187,8 +170,8 @@ void ColorStatistics::updateReport()
         progress.setValue(layers_.front().colorToCount.size() - oldLayer.colorToCount.size());
         qApp->processEvents();
         
-        qDebug() << QColor(oldLayer.minColor) << " " << QColor(oldLayer.maxColor) << " " << 
-            QColor(oldLayer.avgColor) << " " << QColor(oldLayer.colorVariance); // debug
+        //qDebug() << QColor(oldLayer.minColor) << " " << QColor(oldLayer.maxColor) << " " << 
+        //    QColor(oldLayer.avgColor) << " " << QColor(oldLayer.colorVariance); // debug
         
         typedef ColorsInfo::color_to_count_map_type::const_iterator CI;
         for (CI it = oldLayer.colorToCount.begin(); it != oldLayer.colorToCount.end(); ++it)
@@ -201,14 +184,12 @@ void ColorStatistics::updateReport()
               qBlue (oldLayer.avgColor) + qBlue (oldLayer.colorVariance) >= qBlue (it.key()))
           {
             layer.colorToCount.insert(it.key(), it.value());
-            layer.countToColor.insert(it.value(), it.key());
           }
         }
         
         if (layer.colorToCount.empty())
         {
           layer.colorToCount.insert(oldLayer.colorToCount.begin().key(), oldLayer.colorToCount.begin().value());
-          layer.countToColor.insert(oldLayer.colorToCount.begin().value(), oldLayer.colorToCount.begin().key());
         }
         
         Q_ASSERT(layer.colorToCount.size() < oldLayer.colorToCount.size());

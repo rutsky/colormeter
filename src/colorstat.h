@@ -17,11 +17,9 @@ struct ColorsInfo
   // TODO: Incapsulation
   
   // TODO: integer overflow?
-  typedef QMap     <QRgb, quint64> color_to_count_map_type;
-  typedef QMultiMap<quint64, QRgb> count_to_color_map_type;
+  typedef QMap<QRgb, quint64> color_to_count_map_type;
   
   color_to_count_map_type colorToCount;
-  count_to_color_map_type countToColor;
   
   // Calculates nColors, minColor, avgColor, maxColor, colorVariance
   void calcColorStats();
