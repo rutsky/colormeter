@@ -47,12 +47,15 @@ private slots:
 private:
   QPixmap pixmap_; // TODO: store only one copy of pixmap
   
+  QPixmap diagram_;
+  
   QVector<ColorsInfo> layers_;
   
   QHBoxLayout        *mainLayout_;
   QLabel             *upperText_;
   QLabel             *diagramLabel_;
   QTextBrowser       *editor_;
+  QString            tableInHTML_;
 };
 
 #endif // COLORSTAT_H

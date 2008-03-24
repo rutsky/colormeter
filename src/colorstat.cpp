@@ -14,7 +14,7 @@ namespace
 // Calculates minColor, avgColor, maxColor
 void ColorsInfo::calcColorStats()
 {
-  qDebug() << colorToCount.empty() << " " << colorToCount.size() << " " << countToColor.size(); // debug
+  //qDebug() << colorToCount.empty() << " " << colorToCount.size() << " " << countToColor.size(); // debug
   Q_ASSERT(!colorToCount.empty() && colorToCount.size() == countToColor.size());
     
   minColor = qRgb(255, 255, 255);
@@ -229,11 +229,11 @@ void ColorStatistics::updateReport()
        -(labelWidth + riskLength), -pixymax,
        labelWidth + riskLength + pixxmax, labelHeight + riskLength + pixymax);
 
-    QPixmap pixmap(rect.width() + 20, rect.height() + 20);
-    pixmap.fill();
+    diagram_ = QPixmap(rect.width() + 20, rect.height() + 20);
+    diagram_.fill();
     QPainter painter;
         
-    painter.begin(&pixmap);
+    painter.begin(&diagram_);
     
     painter.setRenderHint(QPainter::Antialiasing);
     painter.setPen(QPen(QColor(Qt::black), 3, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
@@ -317,8 +317,18 @@ void ColorStatistics::updateReport()
     
     painter.end();
     
-    diagramLabel_->setPixmap(pixmap);
+    diagramLabel_->setPixmap(diagram_);
     diagramLabel_->show();
+    
+    // TODO
+    // Saving results
+    diagram_.save("__diagram.jpg");
+    QFile file("__table.html");
+    if (file.open(QIODevice::WriteOnly | QIODevice::Text))
+    {
+      QTextStream out(&file);
+      out << tableInHTML_;
+    }
   }
 }
 
@@ -362,6 +372,20 @@ void ColorStatistics::insertTable()
   QTextCharFormat headerFormat = cursor.charFormat();
   headerFormat.setFontWeight(QFont::Bold);
 
+  // TODO
+  tableInHTML_.clear();
+ 
+  tableInHTML_.append("<html>\n<body>\n<table>\n");
+  tableInHTML_.append("  <tr bgcolor='#e0e0e0'>\n"
+    "    <td rowspan=2>#</td><td rowspan=2>Pixel % ?</td><td rowspan=2>Colors in pallete</td>"
+    "<td colspan=4>Minimum</td><td colspan=4>Maximum</td><td colspan=4>Average</td>"
+    "<td rowspan=2>Variance</td><td rowspan=2>Average color</td>\n  </tr>\n");
+  tableInHTML_.append("  <tr bgcolor='#e0e0e0'>\n"
+      "    <td>Value</td><td>R</td><td>G</td><td>B</td>"
+      "<td>Value</td><td>R</td><td>G</td><td>B</td>"
+      "<td>Value</td><td>R</td><td>G</td><td>B</td>\n"
+      "  </tr>\n");
+  
   // Filling table headers
   for (int i = 0; i < headersLine1.size(); ++i)
   {
@@ -406,7 +430,7 @@ void ColorStatistics::insertTable()
   for (int layerInd = 0; layerInd < layers_.size(); ++ layerInd)
   {
     ColorsInfo const &layer = layers_[layerInd];
-    
+   
     QVector<QString> values;
     values << tr("%1").arg(layerInd) << tr("?") << tr("%1").arg(layer.colorToCount.size()) <<
         tr("%1").arg(layer.minColor & 0x00FFFFFFUL) << 
@@ -418,11 +442,14 @@ void ColorStatistics::insertTable()
         tr("%1").arg(qRed(layer.colorVariance) + qBlue(layer.colorVariance) + qGreen(layer.colorVariance)) << tr("     ");
     Q_ASSERT(values.size() == table->columns());
     
+    tableInHTML_.append(tr("  <tr>\n"));
     for (int i = 0; i < values.size(); ++i)
     {
       QTextTableCell cell = table->cellAt(2 + layerInd, i);
       QTextCursor cellCursor = cell.firstCursorPosition();
       cellCursor.insertText(QString("%1").arg(values[i]), format);
+      if (i != values.size() - 1)
+        tableInHTML_.append(tr("    <td>%1</td>\n").arg(values[i]));
     }
     
     // Color cell
@@ -431,6 +458,11 @@ void ColorStatistics::insertTable()
       QTextCharFormat format = cell.format();
       format.setBackground(QColor(layer.avgColor));
       cell.setFormat(format);
+      tableInHTML_.append(tr("    <td bgcolor='#%1%2%3'>&nbsp;<td>\n").
+          arg(qRed(layer.avgColor), 2, 16).arg(qGreen(layer.avgColor), 2, 16).arg(qBlue(layer.avgColor), 2, 16));
     }
+    tableInHTML_.append(tr("  </tr>\n"));
   }
+  
+  tableInHTML_.append(tr("<table>\n</body>\n</html>\n"));
 }
