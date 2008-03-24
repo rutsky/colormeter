@@ -10,6 +10,7 @@
 class QLabel;
 class QVBoxLayout;
 class QHBoxLayout;
+class QTextBrowser;
 
 struct ColorsInfo
 {
@@ -41,14 +42,17 @@ public slots:
   
 private slots:
   void updateReport();
+  void insertTable();
   
 private:
   QPixmap pixmap_; // TODO: store only one copy of pixmap
   
   QVector<ColorsInfo> layers_;
   
-  QHBoxLayout *mainLayout_;
-  QLabel      *upperText_;
+  QHBoxLayout        *mainLayout_;
+  QLabel             *upperText_;
+  QLabel             *diagramLabel_;
+  QTextBrowser       *editor_;
 };
 
 #endif // COLORSTAT_H
