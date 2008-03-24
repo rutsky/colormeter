@@ -80,15 +80,7 @@ ColorStatistics::ColorStatistics( QWidget *parent )
   colorsStatisticsLayout->addWidget(diagramLabel_);
   colorsStatisticsLayout->addStretch(1);
   
-  QWidget *colorsStatisticsTabWidget = new QWidget;
-  colorsStatisticsTabWidget->setLayout(colorsStatisticsLayout);
-  
-  QTabWidget *tabWidget = new QTabWidget;
-  tabWidget->addTab(colorsStatisticsTabWidget, tr("Colors statistics"));
-  
-  mainLayout_ = new QHBoxLayout;
-  mainLayout_->addWidget(tabWidget);
-  setLayout(mainLayout_);
+  setLayout(colorsStatisticsLayout);
   
   //setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
   
@@ -111,6 +103,10 @@ void ColorStatistics::updateReport()
   }
   else
   {
+    upperText_->setText(tr("Processing..."));
+    editor_->hide();
+    diagramLabel_->hide();
+    
     QImage image = pixmap_.toImage();
 
     // Generating report
@@ -132,7 +128,27 @@ void ColorStatistics::updateReport()
         qApp->processEvents();
         
         for (int column = 0; column < pixmap_.width(); ++column)
-          ++layer.colorToCount[image.pixel(column, row)];
+        {
+          QRgb color = image.pixel(column, row) & 0x00FFFFFFUL;
+          ++layer.colorToCount[color];
+        }
+      }
+    }
+    
+    if (layer.colorToCount.size() > 0)
+    {
+      // Removing absolutely white pixels
+      {
+        ColorsInfo::color_to_count_map_type::iterator it = layer.colorToCount.find(qRgba(255, 255, 255, 0));
+        if (it != layer.colorToCount.end())
+          layer.colorToCount.erase(it);
+      }
+      
+      // Removing absolutely black pixels
+      {
+        ColorsInfo::color_to_count_map_type::iterator it = layer.colorToCount.find(qRgba(0, 0, 0, 0));
+        if (it != layer.colorToCount.end())
+          layer.colorToCount.erase(it);
       }
     }
     
@@ -206,19 +222,23 @@ void ColorStatistics::updateReport()
     editor_->show();
     insertTable();
     
-    QPicture picture;
-    QPainter painter;
-    
     double const pixdx = 35, pixdy = 20, dx = 1, dy = 20, xmax = layers_.size() - 1, ymax = 260, riskLength = 10,
         labelWidth = 30, labelHeight = 20, pixymax = ymax / dy * pixdy, pixxmax = xmax / dx * pixdx; 
     
-    picture.setBoundingRect(QRect(-(labelWidth + riskLength), -pixymax, labelWidth + riskLength + pixxmax, labelWidth + riskLength + pixymax).adjusted(-10, -10, 20, 20)); // TODO: Dick as all other
+    QRect rect = QRect(
+       -(labelWidth + riskLength), -pixymax,
+       labelWidth + riskLength + pixxmax, labelHeight + riskLength + pixymax);
+
+    QPixmap pixmap(rect.width() + 20, rect.height() + 20);
+    pixmap.fill();
+    QPainter painter;
         
-    painter.begin(&picture);
+    painter.begin(&pixmap);
     
     painter.setRenderHint(QPainter::Antialiasing);
     painter.setPen(QPen(QColor(Qt::black), 3, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
-    
+    painter.translate(-rect.topLeft().x(), -rect.topLeft().y() + 20);
+        
     // Rendering axes
     painter.drawLine(0, 0, 0, -ymax / dy * pixdy);
     for (int y = 0; y <= ymax; y += dy)
@@ -297,7 +317,7 @@ void ColorStatistics::updateReport()
     
     painter.end();
     
-    diagramLabel_->setPicture(picture);
+    diagramLabel_->setPixmap(pixmap);
     diagramLabel_->show();
   }
 }
@@ -355,7 +375,7 @@ void ColorStatistics::insertTable()
       cellCursor.insertText(QString("%1").arg(headerString), headerFormat);
       
       QTextCharFormat format = cell.format();
-      format.setBackground(Qt::lightGray);
+      format.setBackground(QColor("#e0e0e0"));
       format.setVerticalAlignment(QTextCharFormat::AlignMiddle);
       cell.setFormat(format);
     }
@@ -368,7 +388,7 @@ void ColorStatistics::insertTable()
       cellCursor.insertText(QString("%1").arg(headerString), headerFormat);
       
       QTextCharFormat format = cell.format();
-      format.setBackground(Qt::lightGray);
+      format.setBackground(QColor("#e0e0e0"));
       format.setVerticalAlignment(QTextCharFormat::AlignMiddle);
       cell.setFormat(format);
     }
@@ -389,11 +409,11 @@ void ColorStatistics::insertTable()
     
     QVector<QString> values;
     values << tr("%1").arg(layerInd) << tr("?") << tr("%1").arg(layer.colorToCount.size()) <<
-        tr("%1").arg(layer.minColor) << 
+        tr("%1").arg(layer.minColor & 0x00FFFFFFUL) << 
         tr("%1").arg(qRed(layer.minColor)) << tr("%1").arg(qGreen(layer.minColor)) << tr("%1").arg(qBlue(layer.minColor)) <<
-        tr("%1").arg(layer.maxColor) << 
+        tr("%1").arg(layer.maxColor & 0x00FFFFFFUL) << 
         tr("%1").arg(qRed(layer.maxColor)) << tr("%1").arg(qGreen(layer.maxColor)) << tr("%1").arg(qBlue(layer.maxColor)) <<
-        tr("%1").arg(layer.avgColor) << 
+        tr("%1").arg(layer.avgColor & 0x00FFFFFFUL) << 
         tr("%1").arg(qRed(layer.avgColor)) << tr("%1").arg(qGreen(layer.avgColor)) << tr("%1").arg(qBlue(layer.avgColor)) <<
         tr("%1").arg(qRed(layer.colorVariance) + qBlue(layer.colorVariance) + qGreen(layer.colorVariance)) << tr("     ");
     Q_ASSERT(values.size() == table->columns());
