@@ -203,7 +203,7 @@ void ColorStatistics::updateReport()
     editor_->show();
     insertTable();
     
-    double const pixdx = 35, pixdy = 20, dx = 1, dy = 20, xmax = layers_.size() - 1, ymax = 260, riskLength = 10,
+    double const pixdx = 45, pixdy = 20, dx = 1, dy = 20, xmax = layers_.size() - 1, ymax = 260, riskLength = 10,
         labelWidth = 30, labelHeight = 20, pixymax = ymax / dy * pixdy, pixxmax = xmax / dx * pixdx; 
     
     QRect rect = QRect(

@@ -45,8 +45,17 @@ ImageViewer::ImageViewer()
 void ImageViewer::open()
 {
   // TODO: Use QImageReader::supportedImageFormats().
-  QString fileName = QFileDialog::getOpenFileName(this, tr("Open File"), QDir::currentPath(),
-      tr("Images (*.png *.xpm *.jpg *.jpeg *.bmp *.gif *.pbm *.pgm *.ppm *.tiff *.tif *.xbm *.xpm);;Any files (*)"));
+  QList<QByteArray> const &formats = QImageReader::supportedImageFormats();
+  QString filter(tr("Images ("));
+  for (int i = 0; i < formats.size(); ++i)
+  {
+    if (i != 0)
+      filter.append(" ");
+    filter.append(QString("*.%1").arg(QString(formats.at(i))));
+  }
+  filter.append(tr(");;Any files (*)"));
+  
+  QString fileName = QFileDialog::getOpenFileName(this, tr("Open File"), QDir::currentPath(), filter);
   if (!fileName.isEmpty())
   {
     QPixmap pixmap(fileName);
