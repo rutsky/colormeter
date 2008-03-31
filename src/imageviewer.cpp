@@ -67,9 +67,9 @@ void ImageViewer::open()
       
       return; // Success
     }
+    
+    return; // Failure
   }
-  
-  return; // Failure
 }
 
 void ImageViewer::updateStatusBar()

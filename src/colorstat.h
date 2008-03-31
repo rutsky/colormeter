@@ -22,11 +22,11 @@ struct ColorsInfo
   
   color_to_count_map_type colorToCount;
   
-  // Calculates nColors, minColor, avgColor, maxColor, colorVariance
+  // Calculates nColors, minColor, avgColor, maxColor, colorStandartDeviation
   void calcColorStats();
     
   quint64 nPixels;
-  QRgb minColor, avgColor, maxColor, colorVariance;
+  QRgb minColor, avgColor, maxColor, colorStandartDeviation;
 };
 
 class ColorStatistics : public QWidget
