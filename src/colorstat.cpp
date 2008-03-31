@@ -113,7 +113,7 @@ void ColorStatistics::saveTableToFile()
       QString(QDir::currentPath()).append(tr("/table.html")),
       tr("HTML files (*.htm *.html);;Any files (*)"));
   
-  if (fileName.isEmpty())
+  if (!fileName.isEmpty())
   {
     QFile file(fileName);
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
