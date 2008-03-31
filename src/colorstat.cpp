@@ -71,6 +71,7 @@ ColorStatistics::ColorStatistics( QWidget *parent )
 {
   upperText_    = new QLabel;
   diagramLabel_ = new QLabel;
+  diagramLabel_->setAlignment(Qt::AlignHCenter);
   
   editor_ = new QTextBrowser;
  
