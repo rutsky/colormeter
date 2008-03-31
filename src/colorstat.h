@@ -11,6 +11,7 @@ class QLabel;
 class QVBoxLayout;
 class QHBoxLayout;
 class QTextBrowser;
+class QPushButton;
 
 struct ColorsInfo
 {
@@ -24,7 +25,7 @@ struct ColorsInfo
   // Calculates nColors, minColor, avgColor, maxColor, colorVariance
   void calcColorStats();
     
-  quint64 nColors;
+  quint64 nPixels;
   QRgb minColor, avgColor, maxColor, colorVariance;
 };
 
@@ -41,6 +42,8 @@ public slots:
 private slots:
   void updateReport();
   void insertTable();
+  void saveTableToFile();
+  void saveDiagramToFile();
   
 private:
   QPixmap pixmap_; // TODO: store only one copy of pixmap
@@ -51,6 +54,7 @@ private:
   
   QHBoxLayout        *mainLayout_;
   QLabel             *upperText_;
+  QPushButton        *saveTable_, *saveDiagram_;
   QLabel             *diagramLabel_;
   QTextBrowser       *editor_;
   QString            tableInHTML_;

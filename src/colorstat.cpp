@@ -24,7 +24,7 @@ void ColorsInfo::calcColorStats()
   quint64 rTotal, gTotal, bTotal; // TODO: more overflow stable counting
   
   // Calculating minimum, maximum and average colors
-  rTotal = 0, gTotal = 0, bTotal = 0, nColors = 0;
+  rTotal = 0, gTotal = 0, bTotal = 0, nPixels = 0;
   typedef color_to_count_map_type::const_iterator CI;
   for (CI it = colorToCount.begin(); it != colorToCount.end(); ++it)
   {
@@ -47,11 +47,11 @@ void ColorsInfo::calcColorStats()
     gTotal += it.value() * qGreen(it.key());
     bTotal += it.value() * qBlue (it.key());
     
-    nColors += it.value();
+    nPixels += it.value();
   }
   
   // TODO: Correct?
-  avgColor = qRgb(rTotal / nColors, gTotal / nColors, bTotal / nColors);
+  avgColor = qRgb(rTotal / nPixels, gTotal / nPixels, bTotal / nPixels);
   
   // Calculating color dispersion
   rTotal = 0, gTotal = 0, bTotal = 0;
@@ -63,7 +63,7 @@ void ColorsInfo::calcColorStats()
   }
   
   // TODO: Correct?
-  colorVariance = qRgb(::sqrt(rTotal / nColors), ::sqrt(gTotal / nColors), ::sqrt(bTotal / nColors));
+  colorVariance = qRgb(::sqrt(rTotal / nPixels), ::sqrt(gTotal / nPixels), ::sqrt(bTotal / nPixels));
 }
 
 ColorStatistics::ColorStatistics( QWidget *parent )
@@ -74,8 +74,21 @@ ColorStatistics::ColorStatistics( QWidget *parent )
   
   editor_ = new QTextBrowser;
  
+  saveTable_   = new QPushButton("Save &table to file");
+  saveDiagram_ = new QPushButton("Save &diagram to file");
+  connect(saveTable_,   SIGNAL(clicked()), this, SLOT(saveTableToFile()));
+  connect(saveDiagram_, SIGNAL(clicked()), this, SLOT(saveDiagramToFile()));
+  
+  QHBoxLayout *buttonsLayout = new QHBoxLayout;
+  buttonsLayout->addWidget(saveTable_);
+  buttonsLayout->addWidget(saveDiagram_);
+  
+  QWidget *buttonsWidget = new QWidget;
+  buttonsWidget->setLayout(buttonsLayout);
+  
   QVBoxLayout *colorsStatisticsLayout = new QVBoxLayout;
   colorsStatisticsLayout->addWidget(upperText_);
+  colorsStatisticsLayout->addWidget(buttonsWidget);
   colorsStatisticsLayout->addWidget(editor_, 1000);
   colorsStatisticsLayout->addWidget(diagramLabel_);
   colorsStatisticsLayout->addStretch(1);
@@ -93,17 +106,74 @@ void ColorStatistics::setPixmap( QPixmap const &pixmap )
   updateReport();
 }
 
+void ColorStatistics::saveTableToFile()
+{
+  QString fileName = QFileDialog::getSaveFileName(this, tr("Save table"),
+      QString(QDir::currentPath()).append(tr("/table.html")),
+      tr("HTML files (*.htm *.html);;Any files (*)"));
+  
+  QFile file(fileName);
+  if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
+    QMessageBox::information(this, tr("ColorMeter"), tr("Cannot save %1.").arg(fileName));
+  else
+  {
+    QTextStream out(&file);
+    out << tableInHTML_;
+    
+    return; // Success
+  }
+  
+  return; // Failure
+}
+
+void ColorStatistics::saveDiagramToFile()
+{
+  QList<QByteArray> const &formats = QImageWriter::supportedImageFormats();
+  QString filter(tr("Images ("));
+  bool supportPNG = false;
+  for (int i = 0; i < formats.size(); ++i)
+  {
+    if (i != 0)
+      filter.append(" ");
+    filter.append(QString("*.%1").arg(QString(formats.at(i))));
+    
+    if (formats.at(i).toLower() == "png")
+      supportPNG = true;
+  }
+  filter.append(tr(");;Any files (*)"));
+  
+  QString directory(QDir::currentPath());
+  if (supportPNG)
+    directory.append(tr("/diagram.png"));
+  
+  QString fileName = QFileDialog::getSaveFileName(this, tr("Save diagram"), directory, filter);
+  if (!fileName.isEmpty())
+  {
+    QPixmap pixmap(fileName);
+    if (!diagram_.save(fileName))
+      QMessageBox::information(this, tr("ColorMeter"), tr("Cannot save %1.").arg(fileName));
+    else
+      return; // Success
+  }
+  
+  return; // Failure
+}
+
 void ColorStatistics::updateReport()
 {
   if (pixmap_.isNull())
   {
     upperText_->setText(tr("No image opened."));
+    saveTable_->hide();
+    saveDiagram_->hide();
     editor_->hide();
     diagramLabel_->hide();
   }
   else
   {
     upperText_->setText(tr("Processing..."));
+    saveTable_->hide();
+    saveDiagram_->hide();
     editor_->hide();
     diagramLabel_->hide();
     
@@ -203,7 +273,7 @@ void ColorStatistics::updateReport()
     editor_->show();
     insertTable();
     
-    double const pixdx = 45, pixdy = 20, dx = 1, dy = 20, xmax = layers_.size() - 1, ymax = 260, riskLength = 10,
+    double const pixdx = 60, pixdy = 20, dx = 1, dy = 20, xmax = layers_.size() - 1, ymax = 260, riskLength = 10,
         labelWidth = 30, labelHeight = 20, pixymax = ymax / dy * pixdy, pixxmax = xmax / dx * pixdx; 
     
     QRect rect = QRect(
@@ -301,15 +371,8 @@ void ColorStatistics::updateReport()
     diagramLabel_->setPixmap(diagram_);
     diagramLabel_->show();
     
-    // TODO
-    // Saving results
-    diagram_.save("__diagram.jpg");
-    QFile file("__table.html");
-    if (file.open(QIODevice::WriteOnly | QIODevice::Text))
-    {
-      QTextStream out(&file);
-      out << tableInHTML_;
-    }
+    saveTable_->show();
+    saveDiagram_->show();
   }
 }
 
@@ -328,17 +391,19 @@ void ColorStatistics::insertTable()
   
   QVector<QString> headersLine1, headersLine2;
   headersLine1 << 
-      tr("#") << tr("Pixel % ?") << tr("Colors in pallete") << 
-      tr("Minimum") << QString() << QString() << QString() <<
-      tr("Maximum") << QString() << QString() << QString() << 
-      tr("Average") << QString() << QString() << QString() << 
-      tr("Variance") << tr("Average color");
+      tr("#") << tr("Pixel %") << tr("Colors in pallete") << 
+      tr("Minimum")  << QString() << QString() << QString() <<
+      tr("Maximum")  << QString() << QString() << QString() << 
+      tr("Average")  << QString() << QString() << QString() << 
+      tr("Variance") << QString() << QString() << QString() << 
+      tr("Average color");
   headersLine2 << 
       QString() << QString() << QString() << 
       tr("Value") << tr("R") << tr("G") << tr("B") <<
       tr("Value") << tr("R") << tr("G") << tr("B") <<
       tr("Value") << tr("R") << tr("G") << tr("B") <<
-      QString() << QString();
+      tr("Value") << tr("R") << tr("G") << tr("B") <<
+      QString();
   Q_ASSERT(headersLine1.size() == headersLine2.size());
   
   QTextTable *table = cursor.insertTable(2 + layers_.size(), headersLine1.size(), tableFormat);
@@ -356,13 +421,14 @@ void ColorStatistics::insertTable()
   // TODO
   tableInHTML_.clear();
  
-  tableInHTML_.append("<html>\n<body>\n<table>\n");
+  tableInHTML_.append("<html>\n<body>\n<table border=1>\n");
   tableInHTML_.append("  <tr bgcolor='#e0e0e0'>\n"
-    "    <td rowspan=2>#</td><td rowspan=2>Pixel % ?</td><td rowspan=2>Colors in pallete</td>"
+    "    <td rowspan=2>#</td><td rowspan=2>Pixel %</td><td rowspan=2>Colors in pallete</td>"
     "<td colspan=4>Minimum</td><td colspan=4>Maximum</td><td colspan=4>Average</td>"
-    "<td rowspan=2>Variance</td><td rowspan=2>Average color</td>\n  </tr>\n");
+    "<td colspan=4>Variance</td><td rowspan=2>Average color</td>\n  </tr>\n");
   tableInHTML_.append("  <tr bgcolor='#e0e0e0'>\n"
       "    <td>Value</td><td>R</td><td>G</td><td>B</td>"
+      "<td>Value</td><td>R</td><td>G</td><td>B</td>"
       "<td>Value</td><td>R</td><td>G</td><td>B</td>"
       "<td>Value</td><td>R</td><td>G</td><td>B</td>\n"
       "  </tr>\n");
@@ -406,6 +472,7 @@ void ColorStatistics::insertTable()
   table->mergeCells(0,  3, 1, 4);
   table->mergeCells(0,  7, 1, 4);
   table->mergeCells(0, 11, 1, 4);
+  table->mergeCells(0, 15, 1, 4);
   
   // Filling table
   for (int layerInd = 0; layerInd < layers_.size(); ++ layerInd)
@@ -413,14 +480,18 @@ void ColorStatistics::insertTable()
     ColorsInfo const &layer = layers_[layerInd];
    
     QVector<QString> values;
-    values << tr("%1").arg(layerInd) << tr("?") << tr("%1").arg(layer.colorToCount.size()) <<
+    values << tr("%1").arg(layerInd) <<
+        tr("%1%").arg(100.0 * layer.nPixels / layers_.front().nPixels, 0, 'f', 3) <<
+        tr("%1").arg(layer.colorToCount.size()) <<
         tr("%1").arg(layer.minColor & 0x00FFFFFFUL) << 
         tr("%1").arg(qRed(layer.minColor)) << tr("%1").arg(qGreen(layer.minColor)) << tr("%1").arg(qBlue(layer.minColor)) <<
         tr("%1").arg(layer.maxColor & 0x00FFFFFFUL) << 
         tr("%1").arg(qRed(layer.maxColor)) << tr("%1").arg(qGreen(layer.maxColor)) << tr("%1").arg(qBlue(layer.maxColor)) <<
         tr("%1").arg(layer.avgColor & 0x00FFFFFFUL) << 
         tr("%1").arg(qRed(layer.avgColor)) << tr("%1").arg(qGreen(layer.avgColor)) << tr("%1").arg(qBlue(layer.avgColor)) <<
-        tr("%1").arg(qRed(layer.colorVariance) + qBlue(layer.colorVariance) + qGreen(layer.colorVariance)) << tr("     ");
+        tr("%1").arg(layer.colorVariance & 0x00FFFFFFUL) << 
+        tr("%1").arg(qRed(layer.colorVariance)) << tr("%1").arg(qGreen(layer.colorVariance)) << tr("%1").arg(qBlue(layer.colorVariance)) <<
+        tr("     ");
     Q_ASSERT(values.size() == table->columns());
     
     tableInHTML_.append(tr("  <tr>\n"));
@@ -439,7 +510,7 @@ void ColorStatistics::insertTable()
       QTextCharFormat format = cell.format();
       format.setBackground(QColor(layer.avgColor));
       cell.setFormat(format);
-      tableInHTML_.append(tr("    <td bgcolor='#%1%2%3'>&nbsp;<td>\n").
+      tableInHTML_.append(tr("    <td bgcolor='#%1%2%3'>&nbsp;</td>\n").
           arg(qRed(layer.avgColor), 2, 16).arg(qGreen(layer.avgColor), 2, 16).arg(qBlue(layer.avgColor), 2, 16));
     }
     tableInHTML_.append(tr("  </tr>\n"));

@@ -44,7 +44,6 @@ ImageViewer::ImageViewer()
 
 void ImageViewer::open()
 {
-  // TODO: Use QImageReader::supportedImageFormats().
   QList<QByteArray> const &formats = QImageReader::supportedImageFormats();
   QString filter(tr("Images ("));
   for (int i = 0; i < formats.size(); ++i)
@@ -55,12 +54,12 @@ void ImageViewer::open()
   }
   filter.append(tr(");;Any files (*)"));
   
-  QString fileName = QFileDialog::getOpenFileName(this, tr("Open File"), QDir::currentPath(), filter);
+  QString fileName = QFileDialog::getOpenFileName(this, tr("Open file"), QDir::currentPath(), filter);
   if (!fileName.isEmpty())
   {
     QPixmap pixmap(fileName);
     if (pixmap.isNull())
-      QMessageBox::information(this, tr("Image Viewer"), tr("Cannot load %1.").arg(fileName));
+      QMessageBox::information(this, tr("ColorMeter"), tr("Cannot load %1.").arg(fileName));
     else
     {
       fileName_ = fileName;
