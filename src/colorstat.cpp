@@ -261,13 +261,20 @@ void ColorStatistics::updateReport()
             layer.colorToCount.insert(it.key(), it.value());
           }
         }
+
+        //qDebug() << "Old layer size: " << oldLayer.colorToCount.size() << "\nNew layer size:" << layer.colorToCount.size(); // debug
         
         if (layer.colorToCount.empty())
         {
           layer.colorToCount.insert(oldLayer.colorToCount.begin().key(), oldLayer.colorToCount.begin().value());
         }
         
-        Q_ASSERT(layer.colorToCount.size() < oldLayer.colorToCount.size());
+        if (layer.colorToCount.size() == oldLayer.colorToCount.size())
+        {
+          // This type of filtering don't works in some cases, like when only two colors, so this is the hack.
+          layer.colorToCount.erase(layer.colorToCount.begin());
+        }
+        
         layer.calcColorStats();
       }
     }
